@@ -36,8 +36,8 @@ export default {
 <style lang="scss" scoped>
 .recommend-list {
   .list-title {
-    height: 65px;
-    line-height: 65px;
+    height: 60px;
+    line-height: 60px;
     text-align: center;
     font-size: $font-size-medium;
     color: $color-theme;

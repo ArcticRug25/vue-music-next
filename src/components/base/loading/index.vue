@@ -1,7 +1,7 @@
 <template>
   <div class="loading">
     <div class="loading-content">
-      <img width="24" height="24" src="./loading.gif" />
+      <img width="325" height="325" src="./load.gif" />
       <p class="desc">{{ title }}</p>
     </div>
   </div>
@@ -12,7 +12,7 @@ export default {
   name: 'loading',
   data() {
     return {
-      title: ''
+      title: '正在载入...'
     }
   },
   methods: {
@@ -34,7 +34,11 @@ export default {
     text-align: center;
 
     .desc {
+      position: absolute;
       line-height: 20px;
+      top: 65%;
+      left: 50%;
+      transform: translate3d(-50%, -50%, 0);
       font-size: $font-size-small;
       color: $color-text-l;
     }
