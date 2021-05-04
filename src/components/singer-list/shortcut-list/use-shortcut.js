@@ -1,10 +1,14 @@
 import {
+  ref,
   computed
 } from 'vue'
 
 export default function useShortcut(props, emit) {
   const ANCHOR_HEIGHT = 18
+  //   const BUBBLE_SHOW_TIME = 1000
   const touch = {}
+  //   let t = null
+  const bubbleInfo = ref({})
 
   const shortcutList = computed(() => {
     return props.data.map((group) => {
@@ -30,15 +34,27 @@ export default function useShortcut(props, emit) {
     scrollTo(anchorIndex)
   }
 
+  function onShortcutTouchEnd() {
+    bubbleInfo.value.flag = false
+  }
+
   function scrollTo(index) {
     if (isNaN(index)) return
     index = Math.max(0, Math.min(shortcutList.value.length - 1, index))
+    bubbleInfo.value = {
+      index,
+      text: shortcutList.value[index],
+      flag: true,
+      ANCHOR_HEIGHT
+    }
     emit('scrollTo', index)
   }
 
   return {
+    bubbleInfo,
     shortcutList,
     onShortcutTouchStart,
-    onShortcutTouchMove
+    onShortcutTouchMove,
+    onShortcutTouchEnd
   }
 }

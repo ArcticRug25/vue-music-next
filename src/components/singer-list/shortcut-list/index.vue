@@ -3,9 +3,9 @@
     class="shortcut"
     @touchstart.stop.prevent="onShortcutTouchStart"
     @touchmove.stop.prevent="onShortcutTouchMove"
-    @touchend.stop.prevent
+    @touchend.stop.prevent="onShortcutTouchEnd"
   >
-    <ul>
+    <ul class="shortcut-list">
       <li
         :class="['item', { current: currentIndex === index }]"
         v-for="(item, index) in shortcutList"
@@ -14,14 +14,20 @@
       >
         {{ item }}
       </li>
+      <BubbleTip :bubbleInfo="bubbleInfo" />
     </ul>
   </div>
 </template>
 
 <script>
+import BubbleTip from './bubble-tip'
 import useShortcut from './use-shortcut'
+
 export default {
   name: 'shortcut-list',
+  components: {
+    BubbleTip
+  },
   props: {
     data: {
       type: Array,
@@ -42,13 +48,17 @@ export default {
     const {
       shortcutList,
       onShortcutTouchStart,
-      onShortcutTouchMove
+      onShortcutTouchMove,
+      onShortcutTouchEnd,
+      bubbleInfo
     } = useShortcut(props, emit)
 
     return {
       shortcutList,
       onShortcutTouchStart,
-      onShortcutTouchMove
+      onShortcutTouchMove,
+      onShortcutTouchEnd,
+      bubbleInfo
     }
   }
 }
@@ -68,14 +78,18 @@ export default {
   font-family: Helvetica;
   box-shadow: 4px 4px 6px rgba($color: #000000, $alpha: 0.2);
 
-  .item {
-    padding: 3px;
-    line-height: 1;
-    color: $color-text-l;
-    font-size: $font-size-small;
+  .shortcut-list {
+    position: relative;
 
-    &.current {
-      color: $color-theme;
+    .item {
+      padding: 3px;
+      line-height: 1;
+      color: $color-text-l;
+      font-size: $font-size-small;
+
+      &.current {
+        color: $color-theme;
+      }
     }
   }
 }
