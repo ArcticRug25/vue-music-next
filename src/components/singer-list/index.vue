@@ -1,10 +1,15 @@
 <template>
   <Scroll class="index-list" :probe-type="3" @scroll="onScroll" ref="scrollRef">
     <ul ref="groupRef">
-      <li class="group" v-for="group in data" :key="group.title">
+      <li class="group" v-for="(group, index) in data" :key="group.title">
         <h2 class="title">{{ group.title }}</h2>
-        <ul>
-          <li class="item" v-for="item in group.list" :key="item.id">
+        <ul @click="onItemClick">
+          <li
+            class="item"
+            v-for="item in group.list"
+            :data-info="`${item.id},${index}`"
+            :key="item.id"
+          >
             <img class="avatar" v-lazy="item.pic" />
             <span class="name">{{ item.name }}</span>
           </li>
@@ -44,8 +49,8 @@ export default {
       }
     }
   },
-  emits: ['a'],
-  setup(props) {
+  emits: ['select'],
+  setup(props, { emit }) {
     const {
       groupRef,
       onScroll,
@@ -56,6 +61,18 @@ export default {
       scrollRef
     } = useFixed(props)
 
+    function onItemClick(e) {
+      let target = e.target
+      if (target.parentNode.nodeName.toLowerCase() === 'li') {
+        target = e.target.parentNode
+      }
+      const info = target.dataset.info.split(',')
+      const targetList = props.data[info[1]].list
+      // eslint-disable-next-line eqeqeq
+      const targetItem = targetList.find(item => item.id == info[0])
+      emit('select', targetItem)
+    }
+
     return {
       groupRef,
       onScroll,
@@ -63,7 +80,8 @@ export default {
       fixedStyle,
       currentIndex,
       scrollTo,
-      scrollRef
+      scrollRef,
+      onItemClick
     }
   }
 }
