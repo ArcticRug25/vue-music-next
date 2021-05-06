@@ -14,15 +14,15 @@ export default function useMode() {
 
   const modeIcon = computed(() => {
     const playModeVal = playMode.value
+    console.log(playModeVal)
     return playModeVal === PLAY_MODE.sequence ? 'icon-sequence' : (playModeVal === PLAY_MODE.random ? 'icon-random' : 'icon-loop')
   })
 
   const changeMode = () => {
-      console.log(playMode)
     const mode = (playMode.value + 1) % 3
     const mode1 = playMode.value
     console.log(mode, mode1)
-    // store.dispatch('changeMode', mode)
+    store.dispatch('changeMode', mode)
   }
 
   return {
