@@ -5,6 +5,12 @@
     </div>
     <h1 class="title">{{ title }}</h1>
     <div class="bg-image" :style="bgImageStyle" ref="bgImageRef">
+      <div class="play-btn-wrapper" :style="playBtnStyle">
+        <div class="play-btn" v-show="songs.length > 0" @click="random">
+          <i class="icon-play"></i>
+          <span class="text">随机播放全部</span>
+        </div>
+      </div>
       <div class="filter" :style="filterStyle"></div>
     </div>
     <Scroll
@@ -16,7 +22,7 @@
       @scroll="onScroll"
     >
       <div class="song-list-wrapper">
-        <SongList :songs="songs" />
+        <SongList :songs="songs" @select="selectItem" />
       </div>
     </Scroll>
   </div>
@@ -28,6 +34,7 @@ import Scroll from '@/components/base/scroll'
 import useFilter from './use-filter'
 import { useRouter } from 'vue-router'
 import { computed } from 'vue'
+import { useStore } from 'vuex'
 
 export default {
   name: 'music-list',
@@ -53,10 +60,12 @@ export default {
       bgImageStyle,
       scrollStyle,
       filterStyle,
+      playBtnStyle,
       onScroll
     } = useFilter(props)
 
     const router = useRouter()
+    const store = useStore()
 
     const noResult = computed(() => {
       return !props.loading && !props.songs.length
@@ -66,14 +75,25 @@ export default {
       router.back()
     }
 
+    const selectItem = ({ song, index }) => {
+      store.dispatch('selectPlay', { list: props.songs, index })
+    }
+
+    const random = () => {
+      store.dispatch('randomPlay', props.songs)
+    }
+
     return {
       bgImageRef,
       goBack,
       bgImageStyle,
       scrollStyle,
       filterStyle,
+      playBtnStyle,
       onScroll,
-      noResult
+      noResult,
+      selectItem,
+      random
     }
   }
 }
@@ -118,6 +138,38 @@ export default {
     width: 100%;
     transform-origin: top;
     background-size: cover;
+
+    .play-btn-wrapper {
+      position: absolute;
+      bottom: 20px;
+      z-index: 10;
+      width: 100%;
+
+      .play-btn {
+        box-sizing: border-box;
+        width: 135px;
+        padding: 7px 0;
+        margin: 0 auto;
+        text-align: center;
+        border: 1px solid $color-theme;
+        color: $color-theme;
+        border-radius: 100px;
+        font-size: 0;
+      }
+
+      .icon-play {
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 6px;
+        font-size: $font-size-medium-x;
+      }
+
+      .text {
+        display: inline-block;
+        vertical-align: middle;
+        font-size: $font-size-small;
+      }
+    }
 
     .filter {
       position: absolute;

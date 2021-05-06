@@ -60,6 +60,16 @@ export default function useFilter(props) {
     }
   })
 
+  const playBtnStyle = computed(() => {
+    let display = ''
+    if (scrollY.value >= maxTranslateY.value) {
+      display = 'none'
+    }
+    return {
+      display
+    }
+  })
+
   onMounted(() => {
     const imageHeigtVal = imageHeight.value = bgImageRef.value.clientHeight
     maxTranslateY.value = imageHeigtVal - RESERVED_HEIGHT
@@ -74,6 +84,7 @@ export default function useFilter(props) {
     bgImageStyle,
     scrollStyle,
     filterStyle,
+    playBtnStyle,
     onScroll
   }
 }
