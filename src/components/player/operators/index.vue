@@ -13,7 +13,7 @@
       <i class="icon-next" @click="next"></i>
     </div>
     <div class="icon i-right">
-      <i class="icon-not-favorite"></i>
+      <i :class="getFavouriteIcon(currentSong)" @click="toggleFavourite(currentSong)"></i>
     </div>
   </div>
 </template>
@@ -22,6 +22,7 @@
 import { useStore } from 'vuex'
 import { computed } from 'vue'
 import useMode from './use-mode'
+import useFavourite from './use-favourite'
 
 export default {
   name: 'operators',
@@ -33,13 +34,15 @@ export default {
     const store = useStore()
     const state = store.state
 
-    const { modeIcon, changeMode } = useMode(store)
+    const { modeIcon, changeMode } = useMode()
+    const { getFavouriteIcon, toggleFavourite } = useFavourite()
 
     const playing = computed(() => state.playing)
     const playIcon = computed(() =>
       playing.value ? 'icon-pause' : 'icon-play'
     )
     const currentIndex = computed(() => state.currentIndex)
+    const currentSong = computed(() => store.getters.currentSong)
     const playList = computed(() => state.playList)
     const disableCls = computed(() => (props.songReady ? '' : 'disable'))
 
@@ -93,9 +96,13 @@ export default {
       prev,
       next,
       disableCls,
+      currentSong,
       // mode
       modeIcon,
-      changeMode
+      changeMode,
+      // favourite
+      getFavouriteIcon,
+      toggleFavourite
     }
   }
 }
