@@ -14,7 +14,6 @@ export default function useMode() {
 
   const modeIcon = computed(() => {
     const playModeVal = playMode.value
-    console.log(playModeVal)
     return playModeVal === PLAY_MODE.sequence ? 'icon-sequence' : (playModeVal === PLAY_MODE.random ? 'icon-random' : 'icon-loop')
   })
 
