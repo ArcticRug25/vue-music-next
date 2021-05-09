@@ -30,6 +30,9 @@ const mutations = {
       }
       return item
     })
+  },
+  setPlayingLyric(state, lyric) {
+    state.playingLyric = lyric
   }
 }
 

@@ -20,7 +20,9 @@ const state = {
   // 播放是否全屏
   fullScreen: false,
   // 歌曲收藏列表
-  favouriteList: load(FAVOURITE_KEY)
+  favouriteList: load(FAVOURITE_KEY),
+  // 当前歌词
+  playingLyric: ''
 }
 
 export default state

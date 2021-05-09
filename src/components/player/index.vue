@@ -13,16 +13,33 @@
           <h1 class="title">{{ currentSong.name }}</h1>
           <h2 class="subtitle">{{ currentSong.singer }}</h2>
         </div>
-        <div class="middle">
-          <CD class="middle-l" />
+        <div
+          class="middle"
+          @touchstart.prevent="onMiddleTouchStart"
+          @touchmove.prevent="onMiddleTouchMove"
+          @touchend.prevent="onMiddleTouchEnd"
+        >
+          <CD class="middle-l" :style="middleLStyle" />
           <Lyric
             class="middle-r"
             :songReady="songReady"
             :currentTime="currentTime"
+            @click-lyric="onClickLyric"
             ref="lyricRef"
+            :style="middleRStyle"
           />
+          <div class="lyric-time">
+            {{ '02:48' }}
+          </div>
         </div>
         <div class="bottom">
+          <div class="dot-wrapper">
+            <span class="dot" :class="{ active: currentShow === 'cd' }"></span>
+            <span
+              class="dot"
+              :class="{ active: currentShow === 'lyric' }"
+            ></span>
+          </div>
           <div class="progress-wrapper">
             <span class="time time-l">{{ formatTime(currentTime) }}</span>
             <div class="progress-bar-wrapper">
@@ -37,7 +54,7 @@
               formatTime(currentSong.duration)
             }}</span>
           </div>
-          <Operators @loop="loop" :songReady="songReady" />
+          <Operators @loop="loop" :songReady="songReady" ref="operatorsRef" />
         </div>
       </template>
     </div>
@@ -48,6 +65,7 @@
       @error="error"
       @timeupdate="updateTime"
       @ended="end"
+      @play="play"
     ></audio>
   </div>
 </template>
@@ -59,9 +77,9 @@ import { formatTime } from '@/assets/js/util'
 import Operators from './operators'
 import ProgressBar from './progress-bar'
 import CD from './cd'
-// import Scroll from '@/components/base/scroll'
 import Lyric from './lyric'
 import { PLAY_MODE } from '@/assets/js/constant'
+import useMiddleInteractive from './use-middle-interactive'
 
 export default {
   name: 'player',
@@ -74,12 +92,23 @@ export default {
   },
   setup() {
     const audioRef = ref(null)
+    const operatorsRef = ref(null)
     const songReady = ref(false)
     const store = useStore()
     const state = store.state
     const currentTime = ref(0)
     const lyricRef = ref(null)
     let progressChanging = false
+
+    // hooks
+    const {
+      onMiddleTouchStart,
+      onMiddleTouchMove,
+      onMiddleTouchEnd,
+      currentShow,
+      middleLStyle,
+      middleRStyle
+    } = useMiddleInteractive()
 
     const fullScreen = computed(() => state.fullScreen)
     const currentSong = computed(() => store.getters.currentSong)
@@ -90,6 +119,7 @@ export default {
     )
 
     watch(currentSong, newSong => {
+      store.commit('setPlayingLyric', '加载歌词中...')
       if (!newSong.id || !newSong.url) return
       currentTime.value = 0
       songReady.value = false
@@ -117,6 +147,10 @@ export default {
 
     const pause = () => {
       store.commit('setPlayingState', false)
+    }
+
+    const play = () => {
+      store.commit('setPlayingState', true)
     }
 
     const loop = () => {
@@ -163,17 +197,28 @@ export default {
       lyricRef.value.stopLyric()
       audioRef.value.currentTime = currentTime.value =
         currentSong.value.duration * progress
-      console.log(currentSong.value.duration * progress)
       if (!playing.value) {
         store.commit('setPlayingState', true)
       }
-      lyricRef.value.clickLyric(currentTime.value)
+      lyricRef.value.playLyric()
+      // lyricRef.value.clickLyric(currentTime.value)
+    }
+
+    function onClickLyric(time) {
+      lyricRef.value.stopLyric()
+      if (!playing.value) {
+        store.commit('setPlayingState', true)
+      }
+      audioRef.value.currentTime = currentTime.value = time / 1000
+      lyricRef.value.playLyric()
     }
 
     function end() {
       currentTime.value = 0
       if (playMode.value === PLAY_MODE.loop) {
         loop()
+      } else {
+        operatorsRef.value.next()
       }
     }
 
@@ -182,6 +227,7 @@ export default {
       currentSong,
       audioRef,
       goBack,
+      play,
       pause,
       loop,
       ready,
@@ -195,7 +241,16 @@ export default {
       onProgressChanging,
       onProgressChanged,
       onProgressClick,
-      lyricRef
+      onClickLyric,
+      lyricRef,
+      operatorsRef,
+      // useMiddleInteractive
+      onMiddleTouchStart,
+      onMiddleTouchMove,
+      onMiddleTouchEnd,
+      currentShow,
+      middleLStyle,
+      middleRStyle
     }
   }
 }
@@ -280,7 +335,6 @@ export default {
         width: 100%;
         height: 0;
         padding-top: 80%;
-        display: none;
       }
 
       .middle-r {
@@ -290,12 +344,63 @@ export default {
         height: 100%;
         overflow: hidden;
       }
+
+      .lyric-time {
+        position: absolute;
+        top: 50%;
+        right: 1%;
+        font-size: 12px;
+        color: #fff;
+        transform: translateY(-50%) scale(0.83, 0.83);
+        height: 20px;
+        width: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $color-text-l;
+        background-color: rgba($color: $color-text-l, $alpha: 0.1);
+        border-top-right-radius: 3px;
+        border-bottom-right-radius: 3px;
+
+        &::before {
+          position: absolute;
+          content: '';
+          left: -7px;
+          border: 7px solid rgba($color: $color-text-l, $alpha: 0.1);
+          border-right: 7px solid transparent;
+          border-top: 7px solid transparent;
+          border-bottom-left-radius: 4px;
+          content: '';
+          transform: rotateZ(45deg);
+        }
+      }
     }
 
     .bottom {
       position: absolute;
       bottom: 50px;
       width: 100%;
+
+      .dot-wrapper {
+        text-align: center;
+        font-size: 0;
+
+        .dot {
+          display: inline-block;
+          vertical-align: middle;
+          margin: 0 4px;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: $color-text-l;
+
+          &.active {
+            width: 20px;
+            border-radius: 5px;
+            background: $color-text-ll;
+          }
+        }
+      }
 
       .progress-wrapper {
         display: flex;

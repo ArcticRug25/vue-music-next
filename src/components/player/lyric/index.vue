@@ -1,5 +1,5 @@
 <template>
-  <Scroll ref="lyricScrollRef">
+  <Scroll :probeType="3" ref="lyricScrollRef">
     <div class="lyric-wrapper">
       <div v-if="currentLyric" ref="lyricListRef">
         <p
@@ -7,13 +7,14 @@
           :class="{ current: currentLineNum === index }"
           v-for="(line, index) in currentLyric.lines"
           :key="line.num"
+          @click="onClickLine(line.time)"
         >
           {{ line.txt }}
         </p>
       </div>
-      <!-- <div class="pure-music" v-show="pureMusicLyric">
-      <p>{{ pureMusicLyric }}</p>
-    </div> -->
+      <div class="pure-music" v-show="pureMusicLyric">
+        <p>{{ pureMusicLyric }}</p>
+      </div>
     </div>
   </Scroll>
 </template>
@@ -31,7 +32,8 @@ export default {
     songReady: Boolean,
     currentTime: Number
   },
-  setup(props) {
+  emits: ['click-lyric'],
+  setup(props, { emit }) {
     const {
       currentLyric,
       currentLineNum,
@@ -39,8 +41,14 @@ export default {
       lyricListRef,
       stopLyric,
       playLyric,
-      clickLyric
+      clickLyric,
+      pureMusicLyric
     } = useLyric(props)
+
+    // 点击歌词跳转进度
+    function onClickLine(time) {
+      emit('click-lyric', time)
+    }
 
     return {
       currentLyric,
@@ -49,7 +57,9 @@ export default {
       lyricListRef,
       stopLyric,
       playLyric,
-      clickLyric
+      clickLyric,
+      onClickLine,
+      pureMusicLyric
     }
   }
 }
@@ -68,14 +78,18 @@ export default {
     margin: 0 auto;
     overflow: hidden;
     text-align: center;
+    padding-top: 50%;
+    padding-bottom: 50%;
 
     .text {
       line-height: 32px;
       color: $color-text-l;
       font-size: $font-size-medium;
+      transition: 0.4s;
 
       &.current {
         color: $color-text;
+        font-size: $font-size-large;
       }
     }
 

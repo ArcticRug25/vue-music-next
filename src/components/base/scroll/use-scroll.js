@@ -1,12 +1,12 @@
 import BScroll from '@better-scroll/core'
-import ObesrveDOM from '@better-scroll/observe-dom'
+import ObserveDOM from '@better-scroll/observe-dom'
 import {
   onMounted,
   onUnmounted,
   ref
 } from 'vue'
 
-BScroll.use(ObesrveDOM)
+BScroll.use(ObserveDOM)
 
 export default function useScroll(wrapperRef, options, emit) {
   const scroll = ref(null)
@@ -14,6 +14,7 @@ export default function useScroll(wrapperRef, options, emit) {
   onMounted(() => {
     const scrollVal = scroll.value = new BScroll(wrapperRef.value, {
       observeDOM: true,
+      directionLockThreshold: 0,
       ...options
     })
 

@@ -9,6 +9,9 @@
         />
       </div>
     </div>
+    <div class="playing-lyric-wrapper">
+      <div class="playing-lyric">{{ playingLyric }}</div>
+    </div>
   </div>
 </template>
 
@@ -25,12 +28,14 @@ export default {
     const { cdCls, cdRef, cdImageRef } = useCd()
 
     const currentSong = computed(() => store.getters.currentSong)
+    const playingLyric = computed(() => store.state.playingLyric)
 
     return {
       currentSong,
       cdCls,
       cdRef,
-      cdImageRef
+      cdImageRef,
+      playingLyric
     }
   }
 }
@@ -64,6 +69,20 @@ export default {
     .playing {
       animation: rotate 20s linear infinite;
     }
+  }
+}
+
+.playing-lyric-wrapper {
+  width: 80%;
+  margin: 30px auto 0 auto;
+  overflow: hidden;
+  text-align: center;
+
+  .playing-lyric {
+    height: 20px;
+    line-height: 20px;
+    font-size: $font-size-medium;
+    color: $color-text-l;
   }
 }
 </style>
