@@ -25,11 +25,13 @@
             :songReady="songReady"
             :currentTime="currentTime"
             @click-lyric="onClickLyric"
+            @scroll-time="onChangeScrollLyric"
+            @is-scrolling="onIsScrollingChange"
             ref="lyricRef"
             :style="middleRStyle"
           />
-          <div class="lyric-time">
-            {{ '02:48' }}
+          <div class="lyric-time" :class="{ active: currentShow === 'lyric' && !isScrolling }">
+            {{ formatTime(scrollLyricTime) }}
           </div>
         </div>
         <div class="bottom">
@@ -98,6 +100,8 @@ export default {
     const state = store.state
     const currentTime = ref(0)
     const lyricRef = ref(null)
+    const scrollLyricTime = ref(0)
+    const isScrolling = ref(true)
     let progressChanging = false
 
     // hooks
@@ -209,6 +213,7 @@ export default {
       if (!playing.value) {
         store.commit('setPlayingState', true)
       }
+      console.log(time)
       audioRef.value.currentTime = currentTime.value = time / 1000
       lyricRef.value.playLyric()
     }
@@ -220,6 +225,14 @@ export default {
       } else {
         operatorsRef.value.next()
       }
+    }
+
+    function onChangeScrollLyric(time) {
+      scrollLyricTime.value = time / 1000
+    }
+
+    function onIsScrollingChange(flag) {
+      isScrolling.value = flag
     }
 
     return {
@@ -244,6 +257,10 @@ export default {
       onClickLyric,
       lyricRef,
       operatorsRef,
+      scrollLyricTime,
+      onChangeScrollLyric,
+      onIsScrollingChange,
+      isScrolling,
       // useMiddleInteractive
       onMiddleTouchStart,
       onMiddleTouchMove,
@@ -361,6 +378,7 @@ export default {
         background-color: rgba($color: $color-text-l, $alpha: 0.1);
         border-top-right-radius: 3px;
         border-bottom-right-radius: 3px;
+        opacity: 0;
 
         &::before {
           position: absolute;
@@ -372,6 +390,10 @@ export default {
           border-bottom-left-radius: 4px;
           content: '';
           transform: rotateZ(45deg);
+        }
+
+        &.active {
+          opacity: 1;
         }
       }
     }

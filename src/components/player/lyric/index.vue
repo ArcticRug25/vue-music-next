@@ -4,7 +4,10 @@
       <div v-if="currentLyric" ref="lyricListRef">
         <p
           class="text"
-          :class="{ current: currentLineNum === index }"
+          :class="[
+            { current: currentLineNum === index },
+            { 'center-line': scrollIndex === index && !isScrolling }
+          ]"
           v-for="(line, index) in currentLyric.lines"
           :key="line.num"
           @click="onClickLine(line.time)"
@@ -32,7 +35,7 @@ export default {
     songReady: Boolean,
     currentTime: Number
   },
-  emits: ['click-lyric'],
+  emits: ['click-lyric', 'scroll-time', 'is-scrolling'],
   setup(props, { emit }) {
     const {
       currentLyric,
@@ -42,8 +45,10 @@ export default {
       stopLyric,
       playLyric,
       clickLyric,
-      pureMusicLyric
-    } = useLyric(props)
+      pureMusicLyric,
+      scrollIndex,
+      isScrolling
+    } = useLyric(props, emit)
 
     // 点击歌词跳转进度
     function onClickLine(time) {
@@ -59,7 +64,9 @@ export default {
       playLyric,
       clickLyric,
       onClickLine,
-      pureMusicLyric
+      pureMusicLyric,
+      scrollIndex,
+      isScrolling
     }
   }
 }
@@ -86,6 +93,10 @@ export default {
       color: $color-text-l;
       font-size: $font-size-medium;
       transition: 0.4s;
+
+      &.center-line {
+        color: $color-text;
+      }
 
       &.current {
         color: $color-text;

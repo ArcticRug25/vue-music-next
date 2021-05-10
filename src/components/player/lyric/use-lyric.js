@@ -13,14 +13,17 @@ import {
 } from '@/service/song'
 import Lyric from 'lyric-parser'
 
-export default function useLyric(props) {
+export default function useLyric(props, emit) {
   let touching = false
-  let lyricAreaMap = []
+  let lyricAreaMap
+  const scrollIndex = ref(0)
   const currentLyric = ref(null)
   const currentLineNum = ref(0)
   const lyricScrollRef = ref(null)
   const lyricListRef = ref(null)
   const pureMusicLyric = ref('')
+  const centerLyric = ref(null)
+  const isScrolling = ref(true)
 
   const store = useStore()
   const currentSong = computed(() => store.getters.currentSong)
@@ -35,6 +38,11 @@ export default function useLyric(props) {
     if (newSongReady) {
       playLyric()
     }
+  })
+
+  watch(scrollIndex, newScrollIndex => {
+    const time = currentLyric.value.lines[newScrollIndex].time
+    emit('scroll-time', time)
   })
 
   async function getLyricData(song) {
@@ -78,25 +86,21 @@ export default function useLyric(props) {
 
   onMounted(() => {
     const bs = lyricScrollRef.value.scroll
-    console.log(lyricAreaMap)
     const scrollEnd = 3000
     const actionsHandlerHooks = bs.scroller.actionsHandler.hooks
     const scrollHooks = bs.scroller.hooks
-    scrollHooks.on('scroll', ({
+    scrollHooks.on('scrollEnd', ({
       y
     }) => {
-      const {
-        top,
-        bottom
-      } = lyricAreaMap[6]
-      const index = lyricAreaMap.findIndex(item => item.top - y >= top && item.bottom - y <= bottom)
-      console.log(index)
+      scrollIndex.value = lyricAreaMap.findIndex(item => item.top <= -y + 10 && item.bottom > -y + 10)
     })
     actionsHandlerHooks.on('move', () => {
       bs.stop()
       touching = true
+      emit('is-scrolling', isScrolling.value = true)
     })
     actionsHandlerHooks.on('end', () => {
+      emit('is-scrolling', isScrolling.value = false)
       setTimeout(() => {
         touching = false
       }, scrollEnd)
@@ -107,13 +111,12 @@ export default function useLyric(props) {
   })
 
   async function initLyricTop() {
+    // const bs = lyricScrollRef.value.scroll
     await nextTick()
-    const lyricListEl = [].slice.call(lyricListRef.value.children)
-    lyricAreaMap = lyricListEl.map(item => ({
-      top: item.offsetTop,
-      bottom: item.offsetTop + 32
+    lyricAreaMap = Array(currentLyric.value.lines.length).fill(1).map((item, index) => ({
+      top: 32 * index,
+      bottom: 32 * (index + 1)
     }))
-    console.log(lyricAreaMap)
   }
 
   // 点击进度条跳转歌词位置
@@ -143,12 +146,12 @@ export default function useLyric(props) {
     if (!listEl) return
     // 判断用户是否在滚动
     if (touching) return
-    console.log(lineNum)
+    emit('is-scrolling', isScrolling.value = true)
     if (lineNum > 6) {
       const lineEl = listEl.children[lineNum - 6]
       scrollComp.scroll.scrollToElement(lineEl, 1000)
     } else {
-      scrollComp.scroll.scrollTo(0, 0, 1000)
+      scrollComp.scroll.scrollTo(0, -160, 1000)
     }
   }
 
@@ -160,6 +163,9 @@ export default function useLyric(props) {
     lyricListRef,
     stopLyric,
     playLyric,
-    clickLyric
+    clickLyric,
+    centerLyric,
+    scrollIndex,
+    isScrolling
   }
 }
