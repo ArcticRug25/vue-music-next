@@ -17,6 +17,11 @@ export default function useMode() {
     return playModeVal === PLAY_MODE.sequence ? 'icon-sequence' : (playModeVal === PLAY_MODE.random ? 'icon-random' : 'icon-loop')
   })
 
+  const modeText = computed(() => {
+    const playModeVal = playMode.value
+    return playModeVal === PLAY_MODE.sequence ? '顺序播放' : (playModeVal === PLAY_MODE.random ? '随机播放' : '单曲循环')
+  })
+
   const changeMode = () => {
     const mode = (playMode.value + 1) % 3
     store.dispatch('changeMode', mode)
@@ -24,6 +29,7 @@ export default function useMode() {
 
   return {
     modeIcon,
-    changeMode
+    changeMode,
+    modeText
   }
 }

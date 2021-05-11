@@ -18,13 +18,17 @@ export default function useProgress(props, emit) {
   )
 
   watch(() => props.progress, newProgress => {
-    const barWidth = progressBarRef.value.clientWidth - progressBtnWidth
-    offset.value = barWidth * newProgress
+    setOffset(newProgress)
   })
 
   function onTouchStart(e) {
     touch.x1 = e.touches[0].pageX
     touch.beginWidth = progressRef.value.clientWidth
+  }
+
+  function setOffset(progress) {
+    const barWidth = progressBarRef.value.clientWidth - progressBtnWidth
+    offset.value = barWidth * progress
   }
 
   function onTouchMove(e) {

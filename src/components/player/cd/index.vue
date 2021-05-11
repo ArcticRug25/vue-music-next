@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="cd-wrapper">
+    <div ref="cdWrapperRef" class="cd-wrapper">
       <div class="cd" ref="cdRef">
         <img
           :src="currentSong.pic"
@@ -17,12 +17,14 @@
 
 <script>
 import { useStore } from 'vuex'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import useCd from './use-cd'
 
 export default {
   name: 'CD',
   setup() {
+    const cdWrapperRef = ref(null)
+
     const store = useStore()
 
     const { cdCls, cdRef, cdImageRef } = useCd()
@@ -35,6 +37,7 @@ export default {
       cdCls,
       cdRef,
       cdImageRef,
+      cdWrapperRef,
       playingLyric
     }
   }

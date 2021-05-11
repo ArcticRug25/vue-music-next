@@ -1,8 +1,14 @@
 <template>
-  <div class="player">
-    <div class="normal-player" v-show="fullScreen">
-      <!-- 如果currentSong 为undefined 则不渲染 防止下面报错不执行 -->
-      <template v-if="currentSong">
+  <div class="player" v-show="playList.length">
+    <transition
+      name="normal"
+      @enter="enter"
+      @after-enter="afterEnter"
+      @leave="leave"
+      @after-leave="afterLeave"
+    >
+      <div class="normal-player" v-show="fullScreen">
+        <!-- 如果currentSong 为undefined 则不渲染 防止下面报错不执行 -->
         <div class="background">
           <img :src="currentSong.pic" />
         </div>
@@ -19,7 +25,7 @@
           @touchmove.prevent="onMiddleTouchMove"
           @touchend.prevent="onMiddleTouchEnd"
         >
-          <CD class="middle-l" :style="middleLStyle" />
+          <CD ref="CDRef" class="middle-l" :style="middleLStyle" />
           <Lyric
             class="middle-r"
             :songReady="songReady"
@@ -30,7 +36,10 @@
             ref="lyricRef"
             :style="middleRStyle"
           />
-          <div class="lyric-time" :class="{ active: currentShow === 'lyric' && !isScrolling }">
+          <div
+            class="lyric-time"
+            :class="{ active: currentShow === 'lyric' && !isScrolling }"
+          >
             {{ formatTime(scrollLyricTime) }}
           </div>
         </div>
@@ -46,6 +55,7 @@
             <span class="time time-l">{{ formatTime(currentTime) }}</span>
             <div class="progress-bar-wrapper">
               <ProgressBar
+                :ref="barRef"
                 :progress="progress"
                 @progress-changing="onProgressChanging"
                 @progress-changed="onProgressChanged"
@@ -58,8 +68,9 @@
           </div>
           <Operators @loop="loop" :songReady="songReady" ref="operatorsRef" />
         </div>
-      </template>
-    </div>
+      </div>
+    </transition>
+    <MiniPlayer :progress="progress" :songReady="songReady" />
     <audio
       ref="audioRef"
       @pause="pause"
@@ -74,14 +85,16 @@
 
 <script>
 import { useStore } from 'vuex'
-import { computed, watch, ref } from 'vue'
+import { computed, watch, ref, nextTick } from 'vue'
 import { formatTime } from '@/assets/js/util'
 import Operators from './operators'
 import ProgressBar from './progress-bar'
 import CD from './cd'
 import Lyric from './lyric'
+import MiniPlayer from './mini-player'
 import { PLAY_MODE } from '@/assets/js/constant'
 import useMiddleInteractive from './use-middle-interactive'
+import useAnimation from './use-animation'
 
 export default {
   name: 'player',
@@ -89,11 +102,12 @@ export default {
     Operators,
     ProgressBar,
     CD,
-    // Scroll,
-    Lyric
+    Lyric,
+    MiniPlayer
   },
   setup() {
     const audioRef = ref(null)
+    const barRef = ref(null)
     const operatorsRef = ref(null)
     const songReady = ref(false)
     const store = useStore()
@@ -114,16 +128,19 @@ export default {
       middleRStyle
     } = useMiddleInteractive()
 
+    const { CDRef, enter, afterEnter, leave, afterLeave } = useAnimation()
+
     const fullScreen = computed(() => state.fullScreen)
     const currentSong = computed(() => store.getters.currentSong)
     const playing = computed(() => state.playing)
     const playMode = computed(() => state.playMode)
+    const playList = computed(() => state.playList)
     const progress = computed(
       () => currentTime.value / currentSong.value.duration
     )
 
     watch(currentSong, newSong => {
-      store.commit('setPlayingLyric', '加载歌词中...')
+      store.commit('setPlayingLyric', '加载歌曲中...')
       if (!newSong.id || !newSong.url) return
       currentTime.value = 0
       songReady.value = false
@@ -142,6 +159,15 @@ export default {
       } else {
         lyricRefVal.stopLyric()
         audioEl.pause()
+      }
+    })
+
+    // 解决全屏后 进度条进度丢失问题（因为display为none）
+    watch(fullScreen, async newFullScreen => {
+      if (newFullScreen) {
+        if (!barRef.value) return
+        await nextTick()
+        barRef.value.setOffset(progress.value)
       }
     })
 
@@ -256,18 +282,26 @@ export default {
       onProgressClick,
       onClickLyric,
       lyricRef,
+      barRef,
+      CDRef,
       operatorsRef,
       scrollLyricTime,
       onChangeScrollLyric,
       onIsScrollingChange,
       isScrolling,
+      playList,
       // useMiddleInteractive
       onMiddleTouchStart,
       onMiddleTouchMove,
       onMiddleTouchEnd,
       currentShow,
       middleLStyle,
-      middleRStyle
+      middleRStyle,
+      // useAnimation
+      enter,
+      afterEnter,
+      leave,
+      afterLeave
     }
   }
 }
@@ -450,6 +484,29 @@ export default {
         .progress-bar-wrapper {
           flex: 1;
         }
+      }
+    }
+
+    &.normal-enter-active,
+    &.normal-leave-active {
+      transition: all 0.6s;
+
+      .top,
+      .bottom {
+        transition: all 0.6s cubic-bezier(0.45, 0, 0.55, 1);
+      }
+    }
+
+    &.normal-enter-from,
+    &.normal-leave-to {
+      opacity: 0;
+
+      .top {
+        transform: translate3d(0, -100px, 0);
+      }
+
+      .bottom {
+        transform: translate3d(0, 100px, 0);
       }
     }
   }

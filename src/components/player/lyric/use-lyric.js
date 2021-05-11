@@ -41,6 +41,7 @@ export default function useLyric(props, emit) {
   })
 
   watch(scrollIndex, newScrollIndex => {
+    if (!currentLyric.value) return
     const time = currentLyric.value.lines[newScrollIndex].time
     emit('scroll-time', time)
   })
