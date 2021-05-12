@@ -13,7 +13,10 @@
       <i class="icon-next" @click="next"></i>
     </div>
     <div class="icon i-right">
-      <i :class="getFavouriteIcon(currentSong)" @click="toggleFavourite(currentSong)"></i>
+      <i
+        :class="getFavouriteIcon(currentSong)"
+        @click="toggleFavourite(currentSong)"
+      ></i>
     </div>
   </div>
 </template>
@@ -64,7 +67,7 @@ export default {
         index = listLen - 1
       }
 
-      toggleSong(index)
+      store.commit('setCurrentIndex', index)
     }
 
     const next = () => {
@@ -80,14 +83,7 @@ export default {
         index = 0
       }
 
-      toggleSong(index)
-    }
-
-    function toggleSong(index) {
       store.commit('setCurrentIndex', index)
-      if (!playing.value) {
-        store.commit('setPlayingState', true)
-      }
     }
 
     return {

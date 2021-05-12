@@ -1,6 +1,6 @@
 <template>
   <Scroll ref="scrollRef" class="list-content">
-    <ul ref="listRef" @click.stop>
+    <TransitionGroup name="list" ref="listRef" tag="ul">
       <li
         class="item"
         v-for="song in sequenceList"
@@ -9,11 +9,18 @@
       >
         <i class="current" :class="getCurrentIcon(song)"></i>
         <span class="text">{{ song.name }}</span>
-        <span class="favourite" @click="toggleFavourite(song)">
+        <span class="favourite" @click.stop="toggleFavourite(song)">
           <i :class="getFavouriteIcon(song)"></i>
         </span>
+        <span
+          class="delete"
+          :class="{ disable: removing }"
+          @click.stop="removeSong(song)"
+        >
+          <i class="icon-delete"></i>
+        </span>
       </li>
-    </ul>
+    </TransitionGroup>
   </Scroll>
 </template>
 
@@ -28,9 +35,11 @@ export default {
   components: {
     Scroll
   },
-  setup() {
+  emits: ['hide-list'],
+  setup(_, { emit }) {
     const scrollRef = ref(null)
     const listRef = ref(null)
+    const removing = ref(false)
     const store = useStore()
     const currentSong = computed(() => store.getters.currentSong)
     const sequenceList = computed(() => store.state.sequenceList)
@@ -51,7 +60,8 @@ export default {
       const index = sequenceList.value.findIndex(
         song => currentSong.value.id === song.id
       )
-      const target = listRef.value.children[index]
+      if (index === -1) return
+      const target = listRef.value.$el.children[index]
       scrollRef.value.scroll.scrollToElement(target, 300)
     }
 
@@ -61,16 +71,30 @@ export default {
       store.commit('setPlayingState', true)
     }
 
+    function removeSong(song) {
+      if (removing.value) return
+      removing.value = true
+      store.dispatch('removeSong', song)
+      if (!playList.value.length) {
+        emit('hide-list')
+      }
+      setTimeout(() => {
+        removing.value = false
+      }, 300)
+    }
+
     return {
       getFavouriteIcon,
       toggleFavourite,
       getCurrentIcon,
+      removing,
       sequenceList,
       scrollRef,
       listRef,
       refreshScroll,
       scrollToCurrentSong,
-      selectItem
+      selectItem,
+      removeSong
     }
   }
 }

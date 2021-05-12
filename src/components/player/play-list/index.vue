@@ -2,18 +2,27 @@
   <Teleport to="body">
     <Transition name="list-fade">
       <div class="playlist" v-show="visible && playList.length" @click="hide">
-        <div class="list-wrapper">
+        <div class="list-wrapper" @click.stop>
           <div class="list-header">
             <h1 class="title">
               <i class="icon" :class="modeIcon" @click.stop="changeMode"></i>
               <span class="text">{{ modeText }}</span>
+              <span class="clear" @click="showConfirm">
+                <i class="icon-clear"></i>
+              </span>
             </h1>
           </div>
-          <SongList ref="songListRef" />
+          <SongList ref="songListRef" @hide-list="hide" />
           <div class="list-footer" @click.stop="hide">
             <span>关闭</span>
           </div>
         </div>
+        <Confirm
+          ref="confirmRef"
+          @confirm="confirmClear"
+          text="是否清空播放列表"
+          confirm-btn-text="清空"
+        />
       </div>
     </Transition>
   </Teleport>
@@ -21,6 +30,7 @@
 
 <script>
 import SongList from './song-list'
+import Confirm from '@/components/base/confirm'
 import { ref, computed, watch, nextTick } from 'vue'
 import { useStore } from 'vuex'
 import useMode from '../operators/use-mode'
@@ -28,11 +38,13 @@ import useMode from '../operators/use-mode'
 export default {
   name: 'play-list',
   components: {
-    SongList
+    SongList,
+    Confirm
   },
   setup() {
     const visible = ref(false)
     const songListRef = ref(null)
+    const confirmRef = ref(null)
 
     const store = useStore()
     const state = store.state
@@ -42,7 +54,9 @@ export default {
 
     const { modeIcon, changeMode, modeText } = useMode()
 
-    watch(currentSong, () => {
+    watch(currentSong, async newSong => {
+      if (!visible.value || !newSong.id) return
+      await nextTick()
       songListRef.value.scrollToCurrentSong()
     })
 
@@ -57,12 +71,24 @@ export default {
       songListRef.value.scrollToCurrentSong()
     }
 
+    function showConfirm() {
+      confirmRef.value.show()
+    }
+
+    function confirmClear() {
+      store.dispatch('clearSongList')
+      hide()
+    }
+
     return {
       visible,
       playList,
       hide,
       show,
       songListRef,
+      confirmRef,
+      showConfirm,
+      confirmClear,
       // useMode
       modeIcon,
       changeMode,

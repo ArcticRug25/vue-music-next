@@ -49,7 +49,6 @@ export default function useMiniSlider() {
           pageX
         }) => {
           store.commit('setCurrentIndex', pageX)
-          store.commit('setPlayingState', true)
         })
       } else {
         sliderVal.refresh()
@@ -62,6 +61,14 @@ export default function useMiniSlider() {
     watch(currentIndex, (newIndex) => {
       if (sliderVal && sliderShow.value) {
         sliderVal.goToPage(newIndex, 0, 0)
+      }
+    })
+
+    // 当删除列表歌曲时，虽然数据删除了 但是DOM还是存在的，需要执行 refresh
+    watch(playList, async (newList) => {
+      if (sliderVal && sliderShow.value && newList.length) {
+        await nextTick()
+        sliderVal.refresh()
       }
     })
   })

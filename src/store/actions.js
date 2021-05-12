@@ -12,7 +12,7 @@ export function selectPlay({
   index
 }) {
   commit('setPlayMode', PLAY_MODE.sequence)
-  commit('setSquenceList', list)
+  commit('setSequenceList', list)
   commit('setPlayingState', true)
   commit('setFullScreen', true)
   commit('setPlayList', list)
@@ -23,7 +23,7 @@ export function randomPlay({
   commit
 }, list) {
   commit('setPlayMode', PLAY_MODE.random)
-  commit('setSquenceList', list)
+  commit('setSequenceList', list)
   commit('setPlayingState', true)
   commit('setFullScreen', true)
   commit('setPlayList', shuffle(list))
@@ -44,4 +44,46 @@ export function changeMode({
   const index = state.playList.findIndex((song) => song.id === currentId)
   commit('setCurrentIndex', index)
   commit('setPlayMode', mode)
+}
+
+export function removeSong({
+  commit,
+  state
+}, song) {
+  console.log(song)
+  const sequenceList = state.sequenceList.slice()
+  const playList = state.playList.slice()
+  let currentIndex = state.currentIndex
+
+  const sequenceIndex = findIndex(sequenceList, song)
+  const playIndex = findIndex(playList, song)
+  if (sequenceIndex < 0 || playIndex < 0) return
+
+  sequenceList.splice(sequenceIndex, 1)
+  playList.splice(playIndex, 1)
+
+  // 在删除播放歌曲前面的歌曲时 或者 当播放最后一首歌曲并删除他时
+  if (currentIndex > playIndex || currentIndex === playList.length) {
+    currentIndex--
+  }
+
+  commit('setSequenceList', sequenceList)
+  commit('setPlayList', playList)
+  commit('setCurrentIndex', currentIndex)
+  if (!playList.length) {
+    commit('setPlayingState', false)
+  }
+}
+
+export function clearSongList({
+  commit
+}) {
+  commit('setSequenceList', [])
+  commit('setPlayList', [])
+  commit('setCurrentIndex', 0)
+  commit('setPlayingState', false)
+}
+
+function findIndex(list, song) {
+  return list.findIndex((item) => item.id === song.id)
 }

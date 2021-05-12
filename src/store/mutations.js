@@ -2,7 +2,7 @@ const mutations = {
   setPlayingState(state, playing) {
     state.playing = playing
   },
-  setSquenceList(state, list) {
+  setSequenceList(state, list) {
     state.sequenceList = list
   },
   setPlayList(state, list) {
