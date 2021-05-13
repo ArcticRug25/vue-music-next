@@ -2,7 +2,12 @@
   <div class="recommend-list">
     <h1 class="list-title">热门歌单推荐</h1>
     <ul>
-      <li class="item" v-for="item in albums" :key="item.id">
+      <li
+        class="item"
+        v-for="item in albums"
+        :key="item.id"
+        @click="selectItem(item)"
+      >
         <div class="icon">
           <img width="60" height="60" v-lazy="item.pic" />
         </div>
@@ -27,6 +32,13 @@ export default {
       type: Array,
       default() {
         return []
+      }
+    },
+    methods: {
+      selectItem(album) {
+        this.$router.push({
+          path: `/recommend/${album.id}`
+        })
       }
     }
   }
