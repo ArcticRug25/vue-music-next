@@ -27,7 +27,7 @@ export default function createDetailComponent(name, key, fetch) {
           ret = data
         } else {
           const cached = storage.session.get(key)
-          if (cached && cached.mid === this.$route.params.id) {
+          if (cached && (cached.mid || cached.id + '') === this.$route.params.id) {
             ret = cached
           }
         }
@@ -39,17 +39,18 @@ export default function createDetailComponent(name, key, fetch) {
       },
       title() {
         const data = this.computedData
-        return data && data.name
+        return data && (data.name || data.title)
       }
     },
     async created() {
-      if (!this.computedData) {
+      const data = this.computedData
+      if (!data) {
         // 匹配一级路由路径
         const path = this.$route.matched[0].path
         this.$router.push(path)
         return
       }
-      const result = await fetch(this.computedData)
+      const result = await fetch(data)
       this.songs = await processSongs(result.songs)
       this.loading = false
     }

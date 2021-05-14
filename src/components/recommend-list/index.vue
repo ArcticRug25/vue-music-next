@@ -25,6 +25,9 @@
 </template>
 
 <script>
+import storage from 'good-storage'
+import { ALBUM_KEY } from '@/assets/js/constant'
+
 export default {
   name: 'recommend-list',
   props: {
@@ -33,13 +36,20 @@ export default {
       default() {
         return []
       }
+    }
+  },
+  emits: ['click-album'],
+  methods: {
+    selectItem(album) {
+      this.selectedAlbum = album
+      this.$emit('click-album', album)
+      this.cacheAlbum(album)
+      this.$router.push({
+        path: `/recommend/${album.id}`
+      })
     },
-    methods: {
-      selectItem(album) {
-        this.$router.push({
-          path: `/recommend/${album.id}`
-        })
-      }
+    cacheAlbum(album) {
+      storage.session.set(ALBUM_KEY, album)
     }
   }
 }

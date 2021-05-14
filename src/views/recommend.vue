@@ -7,9 +7,18 @@
             <Slider v-if="sliders.length" :sliders="sliders" />
           </div>
         </div>
-        <RecommendList :albums="albums" v-show="!loading" />
+        <RecommendList
+          @click-album="onCLick"
+          :albums="albums"
+          v-show="!loading"
+        />
       </div>
     </Scroll>
+    <RouterView v-slot="{ Component }">
+      <Transition appear name="slide">
+        <Component :is="Component" :data="selectedAlbum" />
+      </Transition>
+    </RouterView>
   </div>
 </template>
 
@@ -29,6 +38,7 @@ export default {
     return {
       sliders: [],
       albums: [],
+      selectedAlbum: null,
       loadingText: '正在拼命加载...'
     }
   },
@@ -41,6 +51,11 @@ export default {
     const result = await getRecommend()
     this.sliders = result.sliders
     this.albums = result.albums
+  },
+  methods: {
+    onCLick(album) {
+      this.selectedAlbum = album
+    }
   }
 }
 </script>
