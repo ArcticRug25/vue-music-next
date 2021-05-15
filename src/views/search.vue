@@ -3,9 +3,18 @@
     <div class="search-input-wrapper">
       <SearchInput v-model="query" />
     </div>
-    <div class="search-content" v-show="!query">
-      <HotKeys :hotKeys="hotKeys" @tap-hot-key="tapHotKey" />
-    </div>
+    <Scroll ref="scrollRef" class="search-content" v-show="!query">
+      <div>
+        <HotKeys :hotKeys="hotKeys" @tap-hot-key="tapHotKey" />
+        <div class="history-content">
+          <SearchHistory
+            :searches="searchHistory"
+            @select="tapHotKey"
+            @delete="deleteSearch"
+          />
+        </div>
+      </div>
+    </Scroll>
     <div class="search-result" v-show="query">
       <Suggest
         :query="query"
@@ -25,40 +34,62 @@
 import SearchInput from '@/components/search/search-input'
 import HotKeys from '@/components/search/hot-keys'
 import Suggest from '@/components/search/suggest'
+import SearchHistory from '@/components/search/search-history'
+import Scroll from '@/components/wrap-scroll'
 import { getHotKeys } from '@/service/search'
-import { ref } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import storage from 'good-storage'
 import { SINGER_KEY } from '@/assets/js/constant'
+import useSearchHistory from '@/components/search/use-search-history'
 
 export default {
   name: 'search',
   components: {
     SearchInput,
     HotKeys,
-    Suggest
+    Suggest,
+    SearchHistory,
+    Scroll
   },
   setup() {
     const query = ref('')
     const hotKeys = ref([])
     const selectedSinger = ref(null)
+    const scrollRef = ref(null)
 
     const store = useStore()
+    const searchHistory = computed(() => store.state.searchHistory)
 
     const router = useRouter()
 
+    const { saveSearch, deleteSearch } = useSearchHistory()
+
     getHotKeys().then(res => (hotKeys.value = res.hotKeys))
+
+    watch(query, async newQuery => {
+      if (!newQuery) {
+        await nextTick()
+        refreshScroll()
+      }
+    })
+
+    function refreshScroll() {
+      scrollRef.value.scroll.refresh()
+    }
 
     function tapHotKey(key) {
       query.value = key.trim()
     }
 
     function selectSong(song) {
+      saveSearch(query.value)
       store.dispatch('addSong', song)
     }
 
     function selectSinger(singer) {
+      saveSearch(query.value)
       selectedSinger.value = singer
       cacheSinger(singer)
       router.push({
@@ -76,7 +107,11 @@ export default {
       tapHotKey,
       selectSong,
       selectSinger,
-      selectedSinger
+      selectedSinger,
+      searchHistory,
+      scrollRef,
+      // useSearchHistory
+      deleteSearch
     }
   }
 }
@@ -98,6 +133,10 @@ export default {
   .search-content {
     flex: 1;
     overflow: hidden;
+
+    .history-content {
+      margin: 0 20px;
+    }
   }
 
   .search-result {

@@ -30,7 +30,7 @@ export default {
 
 <style lang="scss" scoped>
 .hot-keys {
-  margin: 0 20px 20px 20px;
+  margin: 0 20px 5px 20px;
 
   .title {
     margin-bottom: 20px;

@@ -13,6 +13,12 @@
             </h1>
           </div>
           <SongList ref="songListRef" @hide-list="hide" />
+          <div class="list-add">
+            <div class="add" @click="showAddSong">
+              <i class="icon-add"></i>
+              <span class="text">添加歌曲到队列</span>
+            </div>
+          </div>
           <div class="list-footer" @click.stop="hide">
             <span>关闭</span>
           </div>
@@ -23,6 +29,7 @@
           text="是否清空播放列表"
           confirm-btn-text="清空"
         />
+        <AddSong ref="addSongRef" />
       </div>
     </Transition>
   </Teleport>
@@ -31,6 +38,7 @@
 <script>
 import SongList from './song-list'
 import Confirm from '@/components/base/confirm'
+import AddSong from '@/components/add-song'
 import { ref, computed, watch, nextTick } from 'vue'
 import { useStore } from 'vuex'
 import useMode from '../operators/use-mode'
@@ -39,12 +47,14 @@ export default {
   name: 'play-list',
   components: {
     SongList,
-    Confirm
+    Confirm,
+    AddSong
   },
   setup() {
     const visible = ref(false)
     const songListRef = ref(null)
     const confirmRef = ref(null)
+    const addSongRef = ref(null)
 
     const store = useStore()
     const state = store.state
@@ -80,6 +90,10 @@ export default {
       hide()
     }
 
+    function showAddSong() {
+      addSongRef.value.show()
+    }
+
     return {
       visible,
       playList,
@@ -87,8 +101,10 @@ export default {
       show,
       songListRef,
       confirmRef,
+      addSongRef,
       showConfirm,
       confirmClear,
+      showAddSong,
       // useMode
       modeIcon,
       changeMode,

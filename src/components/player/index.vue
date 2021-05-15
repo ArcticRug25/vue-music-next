@@ -95,6 +95,7 @@ import MiniPlayer from './mini-player'
 import { PLAY_MODE } from '@/assets/js/constant'
 import useMiddleInteractive from './use-middle-interactive'
 import useAnimation from './use-animation'
+import usePlayHistory from './use-play-history'
 
 export default {
   name: 'player',
@@ -129,6 +130,8 @@ export default {
     } = useMiddleInteractive()
 
     const { CDRef, enter, afterEnter, leave, afterLeave } = useAnimation()
+
+    const { savePlay } = usePlayHistory()
 
     const fullScreen = computed(() => state.fullScreen)
     const currentSong = computed(() => store.getters.currentSong)
@@ -194,6 +197,7 @@ export default {
     const ready = () => {
       if (songReady.value) return
       songReady.value = true
+      savePlay(currentSong.value)
     }
 
     const error = () => {
