@@ -26,12 +26,18 @@ const routes = [{
   children: [
     {
       path: ':id',
-      component: () => import(/* webpackChunkName: 'top-detail */ '@/views/top-detail')
+      component: () => import(/* webpackChunkName: 'top-detail' */ '@/views/top-detail')
     }
   ]
 }, {
   path: '/search',
-  component: () => import(/* webpackChunkName: 'search' */ '@/views/search')
+  component: () => import(/* webpackChunkName: 'search' */ '@/views/search'),
+  children: [
+    {
+      path: ':id',
+      component: () => import(/* webpackChunkName: 'SingerDetail' */ '@/views/singer-detail')
+    }
+  ]
 }]
 
 const router = createRouter({

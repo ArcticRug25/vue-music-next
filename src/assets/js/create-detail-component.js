@@ -24,7 +24,11 @@ export default function createDetailComponent(name, key, fetch) {
         let ret = null
         const data = this.data
         if (data) {
+          // if (!data.id) {
+          //   ret = storage.session.get(key)
+          // } else {
           ret = data
+          // }
         } else {
           const cached = storage.session.get(key)
           if (cached && (cached.mid || cached.id + '') === this.$route.params.id) {
@@ -50,6 +54,7 @@ export default function createDetailComponent(name, key, fetch) {
         this.$router.push(path)
         return
       }
+      console.log(data)
       const result = await fetch(data)
       this.songs = await processSongs(result.songs)
       this.loading = false

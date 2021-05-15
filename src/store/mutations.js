@@ -33,6 +33,9 @@ const mutations = {
   },
   setPlayingLyric(state, lyric) {
     state.playingLyric = lyric
+  },
+  setSearchHistory(state, searches) {
+    state.searchHistory = searches
   }
 }
 

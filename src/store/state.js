@@ -1,6 +1,7 @@
 import {
   PLAY_MODE,
-  FAVOURITE_KEY
+  FAVOURITE_KEY,
+  SEARCH_KEY
 } from '@/assets/js/constant'
 import {
   load
@@ -22,7 +23,9 @@ const state = {
   // 歌曲收藏列表
   favouriteList: load(FAVOURITE_KEY),
   // 当前歌词
-  playingLyric: ''
+  playingLyric: '',
+  // 搜索历史
+  searchHistory: load(SEARCH_KEY)
 }
 
 export default state
