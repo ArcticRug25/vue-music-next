@@ -14,16 +14,31 @@
         <div v-show="!query">
           <Switches :items="['最近播放', '搜索历史']" v-model="currentIndex" />
           <div class="list-wrapper">
-            <Scroll v-if="currentIndex === 0" class="list-scroll">
+            <Scroll
+              ref="scrollRef"
+              v-if="currentIndex === 0"
+              class="list-scroll"
+            >
               <div class="list-inner">
-                <SongList :songs="playHistory" />
+                <SongList
+                  :songs="playHistory"
+                  @select="selectSongBySongList"
+                  @delete="deletePlay"
+                  showDelete
+                />
               </div>
             </Scroll>
-            <Scroll v-if="currentIndex === 1" class="list-scroll">
+            <Scroll
+              ref="scrollRef"
+              v-if="currentIndex === 1"
+              class="list-scroll"
+              v-no-result:[noHistoryText]="!searchHistory.length"
+            >
               <div class="list-inner">
                 <SearchList
                   :searches="searchHistory"
                   :show-delete="true"
+                  @select="addQuery"
                   @delete="deleteSearch"
                 />
               </div>
@@ -31,8 +46,18 @@
           </div>
         </div>
         <div class="search-result" v-show="query">
-          <Suggest :query="query" :show-singer="false" />
+          <Suggest
+            :query="query"
+            :show-singer="false"
+            @select-song="selectSongBySuggest"
+          />
         </div>
+        <Message ref="messageRef">
+          <div class="message-title">
+            <i class="icon-ok"></i>
+            <span class="text">1首歌曲已经添加到播放列表</span>
+          </div>
+        </Message>
       </div>
     </Transition>
   </Teleport>
@@ -43,11 +68,13 @@ import SearchInput from '@/components/search/search-input'
 import Suggest from '@/components/search/suggest'
 import Switches from '@/components/base/switches'
 import Scroll from '@/components/base/scroll'
+import Message from '@/components/base/message'
 import SongList from '@/components/base/song-list'
 import SearchList from '@/components/search/search-history'
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useStore } from 'vuex'
 import useSearchHistory from '@/components/search/use-search-history'
+import usePlayHistory from '@/components/player/use-play-history'
 
 export default {
   name: 'add-song',
@@ -57,26 +84,65 @@ export default {
     Switches,
     Scroll,
     SongList,
-    SearchList
+    SearchList,
+    Message
   },
   setup() {
     const visible = ref(false)
     const query = ref('')
     const currentIndex = ref(0)
+    const scrollRef = ref(null)
+    const messageRef = ref(null)
+    const noHistoryText = '暂无搜索记录'
 
     const store = useStore()
     const state = store.state
     const searchHistory = computed(() => state.searchHistory)
     const playHistory = computed(() => state.playHistory)
 
-    const { deleteSearch } = useSearchHistory()
+    const { deleteSearch, saveSearch } = useSearchHistory()
 
-    function show() {
+    const { deletePlay } = usePlayHistory()
+
+    watch(query, async () => {
+      await nextTick()
+      refreshScroll()
+    })
+
+    function addQuery(s) {
+      query.value = s
+    }
+
+    async function show() {
       visible.value = true
+      await nextTick()
+      refreshScroll()
     }
 
     function hide() {
       visible.value = false
+    }
+
+    function selectSongBySongList({ song }) {
+      addSong(song)
+    }
+
+    function selectSongBySuggest(song) {
+      addSong(song)
+      saveSearch(query.value)
+    }
+
+    function addSong(song) {
+      store.dispatch('addSong', song)
+      showMessage()
+    }
+
+    function showMessage() {
+      messageRef.value.show()
+    }
+
+    function refreshScroll() {
+      scrollRef.value.scroll.refresh()
     }
 
     return {
@@ -87,8 +153,16 @@ export default {
       currentIndex,
       searchHistory,
       playHistory,
+      addQuery,
+      selectSongBySongList,
+      selectSongBySuggest,
+      scrollRef,
+      messageRef,
+      noHistoryText,
       // useSearchHistory
-      deleteSearch
+      deleteSearch,
+      // usePlayHistory
+      deletePlay
     }
   }
 }

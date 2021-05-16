@@ -5,7 +5,8 @@ import {
   PLAY_KEY
 } from '@/assets/js/constant'
 import {
-  save
+  save,
+  remove
 } from '@/assets/js/array-store'
 
 export default function usePlayHistory() {
@@ -21,7 +22,16 @@ export default function usePlayHistory() {
     store.commit('setPlayHistory', songs)
   }
 
+  function deletePlay(song) {
+    const songs = remove(PLAY_KEY, (item) => {
+      return item.id === song.id
+    })
+
+    store.commit('setPlayHistory', songs)
+  }
+
   return {
-    savePlay
+    savePlay,
+    deletePlay
   }
 }

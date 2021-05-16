@@ -25,6 +25,7 @@ body, html {
 
 .list-enter-from, .list-leave-to {
   height: 0 !important;
+  opacity: 0;
 }
 
 @keyframes rotate {

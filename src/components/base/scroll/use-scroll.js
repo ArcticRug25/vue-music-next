@@ -3,6 +3,8 @@ import ObserveDOM from '@better-scroll/observe-dom'
 import {
   onMounted,
   onUnmounted,
+  onActivated,
+  onDeactivated,
   ref
 } from 'vue'
 
@@ -27,6 +29,15 @@ export default function useScroll(wrapperRef, options, emit) {
 
   onUnmounted(() => {
     scroll.value.destroy()
+  })
+
+  onActivated(() => {
+    scroll.value.enable()
+    scroll.value.refresh()
+  })
+
+  onDeactivated(() => {
+    scroll.value.disable()
   })
 
   return scroll

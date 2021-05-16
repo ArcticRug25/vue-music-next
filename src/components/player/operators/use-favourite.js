@@ -35,6 +35,12 @@ export default function useFavourite() {
     }
   }
 
+  function cancelFavourite(song) {
+    const list = remove(FAVOURITE_KEY, (item) => item.id === song.id)
+    store.commit('setFavouriteList', list)
+    return list
+  }
+
   function getFavouriteIcon(song) {
     return isFavourite(song) ? 'icon-favorite' : 'icon-not-favorite'
   }
@@ -45,6 +51,7 @@ export default function useFavourite() {
 
   return {
     getFavouriteIcon,
-    toggleFavourite
+    toggleFavourite,
+    cancelFavourite
   }
 }

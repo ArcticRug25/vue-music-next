@@ -50,7 +50,6 @@ export function removeSong({
   commit,
   state
 }, song) {
-  console.log(song)
   const sequenceList = state.sequenceList.slice()
   const playList = state.playList.slice()
   let currentIndex = state.currentIndex
@@ -108,7 +107,7 @@ export function addSong({
   commit('setSequenceList', sequenceList)
   commit('setPlayList', playList)
   commit('setCurrentIndex', currentIndex)
-  commit('setPlayingState', false)
+  commit('setPlayingState', true)
   commit('setFullScreen', true)
 }
 

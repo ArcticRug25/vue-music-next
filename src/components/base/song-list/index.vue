@@ -1,5 +1,5 @@
 <template>
-  <ul class="song-list">
+  <TransitionGroup class="song-list" name="list" tag="ul">
     <li
       class="item"
       v-for="(song, index) in songs"
@@ -13,8 +13,11 @@
         <h2 class="name">{{ song.name }}</h2>
         <p class="desc">{{ getDesc(song) }}</p>
       </div>
+      <span class="icon" v-if="showDelete" @click.stop="deleteItem(song)">
+        <i class="icon-delete"></i>
+      </span>
     </li>
-  </ul>
+  </TransitionGroup>
 </template>
 
 <script>
@@ -27,9 +30,13 @@ export default {
         return []
       }
     },
-    rank: Boolean
+    rank: Boolean,
+    showDelete: {
+      type: Boolean,
+      default: false
+    }
   },
-  emits: ['select'],
+  emits: ['select', 'delete'],
   methods: {
     getDesc(song) {
       return `${song.singer}·${song.album}`
@@ -48,6 +55,9 @@ export default {
       if (index > 2) {
         return index + 1
       }
+    },
+    deleteItem(song) {
+      this.$emit('delete', song)
     }
   }
 }
@@ -106,6 +116,15 @@ export default {
       .desc {
         @include no-wrap();
         margin-top: 4px;
+        color: $color-text-d;
+      }
+    }
+
+    .icon {
+      @include extend-click();
+
+      .icon-delete {
+        font-size: $font-size-small;
         color: $color-text-d;
       }
     }
