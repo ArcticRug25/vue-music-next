@@ -1,6 +1,6 @@
 <template>
-  <MHeader />
-  <Tab />
+  <MHeader/>
+  <Tab/>
   <RouterView :style="viewStyle" v-slot="{ Component }">
     <Transition appear :name="sliderName">
       <KeepAlive>
@@ -15,7 +15,7 @@
       </KeepAlive>
     </Transition>
   </RouterView>
-  <Player />
+  <Player/>
 </template>
 <script>
 import Header from '@/components/header'
